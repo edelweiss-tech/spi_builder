@@ -1,0 +1,6 @@
+proc		/proc			proc	nosuid,noexec,gid=proc		0 0
+devpts		/dev/pts		devpts	nosuid,noexec,gid=tty,mode=620	0 0
+tmpfs		/tmp			tmpfs	nosuid				0 0
+UUID=ALT_STUB	/	ext4	relatime	1	1
+UUID=EFI_STUB	/boot/efi	vfat	umask=0,quiet,showexec,iocharset=utf8,codepage=866	1	2
+UUID=SWAP_STUB	swap	swap	defaults	0	0
