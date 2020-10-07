@@ -3,35 +3,55 @@
 # Read partition UUIDs from the new disk and update /etc/fstab for
 # every distro. Also update cumulatative grub.cfg for REDOS.
 
+help()
+{
+	echo "Usage: $0 <dev>"
+	exit 1
+}
+
+if [ $# -ne 1 ]; then
+  help
+fi
 # Choose which newly partitioned disk to work on
-TARGET_DEV="sde"
+TARGET_DEV="$1"
 
 # End of configurable parameters
 
-umount /dev/${TARGET_DEV}{1,2,3,5,6,7}
+umount ${TARGET_DEV}{1,2,3,5,6,7}
 mkdir -p /tmp/{efi,redos,edelw,alt,astra,wayland}
-mount /dev/${TARGET_DEV}1 /tmp/efi
-mount /dev/${TARGET_DEV}2 /tmp/redos
-mount /dev/${TARGET_DEV}3 /tmp/edelw
-mount /dev/${TARGET_DEV}5 /tmp/alt
-mount /dev/${TARGET_DEV}6 /tmp/astra
-mount /dev/${TARGET_DEV}7 /tmp/wayland
+mount ${TARGET_DEV}1 /tmp/efi
+mount ${TARGET_DEV}2 /tmp/redos
+mount ${TARGET_DEV}3 /tmp/edelw
+mount ${TARGET_DEV}5 /tmp/alt
+mount ${TARGET_DEV}6 /tmp/astra
+mount ${TARGET_DEV}7 /tmp/wayland
 
-echo "Untar distros ..."
+echo "Untar EFI ..."
 tar cf - -C ./d_1 . | tar xpf - -C /tmp/efi
+sync
+echo "Untar REDOS ..."
 tar cf - --exclude='./tmp' -C ./d_2 . | tar xpf - -C /tmp/redos
+sync
+echo "Untar EDELW ..."
 tar cf - --exclude='./tmp' -C ./d_3 . | tar xpf - -C /tmp/edelw
+sync
+echo "Untar ALT ..."
 tar cf - --exclude='./tmp' -C ./d_5 . | tar xpf - -C /tmp/alt
+sync
+echo "Untar ASTRA ..."
 tar cf - --exclude='./tmp' -C ./d_6 . | tar xpf - -C /tmp/astra
+sync
+echo "Untar WAYLAND ..."
 tar cf - --exclude='./tmp' -C ./d_7 . | tar xpf - -C /tmp/wayland
+sync
 
-efi_uuid=$(/usr/sbin/blkid /dev/${TARGET_DEV}1 | sed 's/.* UUID="\([^"]*\).*$/\1/')
-redos_uuid=$(/usr/sbin/blkid /dev/${TARGET_DEV}2 | sed 's/.* UUID="\([^"]*\).*$/\1/')
-edelw_uuid=$(/usr/sbin/blkid /dev/${TARGET_DEV}3 | sed 's/.* UUID="\([^"]*\).*$/\1/')
-swap_uuid=$(/usr/sbin/blkid /dev/${TARGET_DEV}4 | sed 's/.* UUID="\([^"]*\).*$/\1/')
-alt_uuid=$(/usr/sbin/blkid /dev/${TARGET_DEV}5 | sed 's/.* UUID="\([^"]*\).*$/\1/')
-astra_uuid=$(/usr/sbin/blkid /dev/${TARGET_DEV}6 | sed 's/.* UUID="\([^"]*\).*$/\1/')
-wayland_uuid=$(/usr/sbin/blkid /dev/${TARGET_DEV}7 | sed 's/.* UUID="\([^"]*\).*$/\1/')
+efi_uuid=$(/usr/sbin/blkid ${TARGET_DEV}1 | sed 's/.* UUID="\([^"]*\).*$/\1/')
+redos_uuid=$(/usr/sbin/blkid ${TARGET_DEV}2 | sed 's/.* UUID="\([^"]*\).*$/\1/')
+edelw_uuid=$(/usr/sbin/blkid ${TARGET_DEV}3 | sed 's/.* UUID="\([^"]*\).*$/\1/')
+swap_uuid=$(/usr/sbin/blkid ${TARGET_DEV}4 | sed 's/.* UUID="\([^"]*\).*$/\1/')
+alt_uuid=$(/usr/sbin/blkid ${TARGET_DEV}5 | sed 's/.* UUID="\([^"]*\).*$/\1/')
+astra_uuid=$(/usr/sbin/blkid ${TARGET_DEV}6 | sed 's/.* UUID="\([^"]*\).*$/\1/')
+wayland_uuid=$(/usr/sbin/blkid ${TARGET_DEV}7 | sed 's/.* UUID="\([^"]*\).*$/\1/')
 
 sed -e 's/EFI_STUB/'${efi_uuid}'/; s/SWAP_STUB/'${swap_uuid}'/;
 s/REDOS_STUB/'${redos_uuid}'/;' fstab.redos.template > /tmp/redos/etc/fstab
