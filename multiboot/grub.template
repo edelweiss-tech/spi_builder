@@ -120,6 +120,7 @@ menuentry 'RED OS release MUROM (7.2)' --class gnu-linux --class gnu --class os 
 
 	echo	'Загружается начальный виртуальный диск …'
 	initrd /boot/initramfs-4.9.216b-m-RS.img
+	devicetree /boot/bm-mitx.dtb
 }
 
 menuentry 'Debian Edelweiss' --class debian --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-simple-EDELW_STUB' {
@@ -135,10 +136,10 @@ menuentry 'Debian Edelweiss' --class debian --class gnu-linux --class gnu --clas
 	  search --no-floppy --fs-uuid --set=root EDELW_STUB
 	fi
 	echo	'Loading Linux vmlinuz ...'
-	#linux	/boot/vmlinuz-4.9.229-bm root=UUID=EDELW_STUB ro  console=ttyS0,115200 console=tty1 fbcon=map:0 initcall_blacklist=tp_serio_drv_init
-	linux	/boot/vmlinuz root=UUID=EDELW_STUB ro  console=ttyS0,115200 console=tty1 fbcon=map:0
+	linux	/boot/vmlinuz root=UUID=EDELW_STUB ro  console=ttyS0,115200 console=tty1 fbcon=map:0 plymouth.enable=0
 	echo	'Loading initial ramdisk ...'
-	initrd	/boot/initrd.img-4.9.216-bm
+	initrd	/boot/initrd.img
+	devicetree /boot/bm-mitx.dtb
 }
 menuentry 'ALT Workstation 9.1' --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-simple-ALT_STUB' {
 	savedefault
@@ -152,10 +153,11 @@ menuentry 'ALT Workstation 9.1' --class gnu-linux --class gnu --class os --unres
 	else
 	  search --no-floppy --fs-uuid --set=root ALT_STUB
 	fi
-	echo	'Загружается Linux vmlinuz …'
-	linux /boot/vmlinuz root=UUID=ALT_STUB ro resume=/dev/disk/by-uuid/ab38ef79-9e30-4078-96f8-373bd16fcabf panic=30 splash console=ttyS0,115200 console=tty1 fbcon=map:0
+	echo	'Загружается Linux vmlinuz-4.9.229-bmitx-def-alt1 …'
+	linux /boot/vmlinuz-4.9.229-bmitx-def-alt1 root=UUID=ALT_STUB ro resume=/dev/disk/by-uuid/ab38ef79-9e30-4078-96f8-373bd16fcabf panic=30 splash console=ttyS0,115200 console=tty1 fbcon=map:0
 	echo	'Загружается начальный виртуальный диск …'
 	initrd /boot/initrd.img
+	devicetree /boot/bm-mitx.dtb
 }
 
 menuentry 'Astra Linux (Novorossiysk 4.2.1)' --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-simple-ASTRA_STUB' {
@@ -170,10 +172,11 @@ menuentry 'Astra Linux (Novorossiysk 4.2.1)' --class gnu-linux --class gnu --cla
 	else
 	  search --no-floppy --fs-uuid --set=root ASTRA_STUB
 	fi
-	echo	'Загружается Linux vmlinuz-4.9.229-baikal-m1000 …'
-	linux /boot/vmlinuz-4.9.229-baikal-m1000 root=UUID=ASTRA_STUB  rw rootwait console=ttyS0,115200n8 earlyprintk=uart8250-32bit,0x20230000 earlycon=efifb,ram video=HDMI-A-1:D fbcon=map:10 baikal-hdmi.max_clock = 148500
+	echo	'Загружается Linux vmlinuz …'
+	linux /boot/vmlinuz root=UUID=ASTRA_STUB  rw rootwait console=tty1 console=ttyS0,115200n8 earlyprintk=uart8250-32bit,0x20230000 earlycon=efifb,ram video=HDMI-A-1:D fbcon=map:10 baikal-hdmi.max_clock = 148500 verbose ignore_loglevel systemd.legacy_systemd_cgroup_controller=yes efi=noruntime
 	echo	'Загружается начальный виртуальный диск …'
-	initrd /boot/initrd.img-4.9.229-baikal-m1000 
+	initrd /boot/initrd.img
+	devicetree /boot/bm-mitx.dtb
 }
 
 menuentry 'Debian Wayland' --class debian --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-simple-WAYLAND_STUB' {
@@ -192,6 +195,25 @@ menuentry 'Debian Wayland' --class debian --class gnu-linux --class gnu --class 
 	linux	/boot/vmlinuz-4.9.229-baikal_m1000 root=UUID=WAYLAND_STUB ro  verbose
 	echo	'Loading initial ramdisk ...'
 	initrd	/boot/initrd.img-4.9.229-baikal_m1000
+	devicetree /boot/bm-mitx.dtb
+}
+menuentry 'Ubuntu 20.04.1' --class ubuntu --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-simple-UBUNTU_STUB' {
+	#recordfail
+	load_video
+	#gfxmode $linux_gfx_mode
+	insmod gzio
+	if [ x$grub_platform = xxen ]; then insmod xzio; insmod lzopio; fi
+	insmod part_gpt
+	insmod ext2
+	set root='hd0,gpt8'
+	if [ x$feature_platform_search_hint = xy ]; then
+	  search --no-floppy --fs-uuid --set=root --hint-bios=hd0,gpt8 --hint-efi=hd0,gpt8 --hint-baremetal=ahci0,gpt8  UBUNTU_STUB
+	else
+	  search --no-floppy --fs-uuid --set=root UBUNTU_STUB
+	fi
+	linux	/boot/vmlinuz root=UUID=UBUNTU_STUB ro  console=tty1
+	initrd	/boot/initrd.img
+	devicetree /boot/bm-mitx.dtb
 }
 
 ### END /etc/grub.d/10_linux ###

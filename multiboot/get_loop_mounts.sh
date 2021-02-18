@@ -12,7 +12,8 @@ if [ $# -ne 1 ]; then
   help
 fi
 
-mkdir -p d_{1,2,3,5,6,7}
+# Skip 4 as it is a swap partion
+mkdir -p d_{1,2,3,5,6,7,8}
 /usr/sbin/sfdisk -l $1 | awk -v img=$1 -f ./parse_sfdisk.awk | tee /tmp/tomount.sh
 echo "Saved output to /tmp/tomount.sh"
 
