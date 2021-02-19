@@ -71,7 +71,7 @@ s/UBUNTU_STUB/'${ubuntu_uuid}'/;' fstab.ubuntu.template >  /tmp/ubuntu/etc/fstab
 sed -e 's/REDOS_STUB/'${redos_uuid}'/; s/EDELW_STUB/'${edelw_uuid}'/;
 s/ALT_STUB/'${alt_uuid}'/; s/ASTRA_STUB/'${astra_uuid}'/;
 s/WAYLAND_STUB/'${wayland_uuid}'/; 
-s/UBUNTU_STUB/'${ubuntu_uuid}'/;' grub.template > /tmp/redos/boot/grub2/grub.cfg
+s/UBUNTU_STUB/'${ubuntu_uuid}'/;' grub.template > /tmp/edelw/boot/grub/grub.cfg
 
 sed -e 's/EDELW_STUB/'${edelw_uuid}'/;' efi_grub.template > /tmp/efi/EFI/debian/grub.cfg
 sed -e 's/EDELW_STUB/'${edelw_uuid}'/;' startup.nsh.template > /tmp/efi/startup.nsh
