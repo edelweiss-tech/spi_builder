@@ -17,7 +17,7 @@ fi
 TARGET_DEV="$1"
 
 # End of configurable parameters
-umount -q ${TARGET_DEV}{1,2,3,5,6,7}
+umount -q ${TARGET_DEV}{1,2,3,5,6,7,8}
 echo "Running parted ..."
 parted ${TARGET_DEV} --script mklabel gpt
 partprobe -s ${TARGET_DEV}
@@ -26,7 +26,7 @@ parted ${TARGET_DEV} --script -a optimal -- mkpart primary fat32 1MiB 257MiB \
 name 1 \"EFI\ System\" set 1 esp on set 1 boot on
 partprobe -s ${TARGET_DEV}
 
-# redos 7.2
+# REDOS 7.2
 parted ${TARGET_DEV} --script -a optimal -- mkpart primary ext4 257MiB 13757MiB \
 name 2 "redos"
 partprobe -s ${TARGET_DEV}
@@ -78,4 +78,16 @@ yes | mkfs.ext4 ${TARGET_DEV}7
 sync
 yes | mkfs.ext4 ${TARGET_DEV}8
 sync
+
+mkdir -p /tmp/{efi,redos,edelw,alt,astra,wayland,ubuntu}
+# skip dev 4 as it is a swap partition
+mount ${TARGET_DEV}1 /tmp/efi
+mount ${TARGET_DEV}2 /tmp/redos
+mount ${TARGET_DEV}3 /tmp/edelw
+mount ${TARGET_DEV}5 /tmp/alt
+mount ${TARGET_DEV}6 /tmp/astra
+mount ${TARGET_DEV}7 /tmp/wayland
+mount ${TARGET_DEV}8 /tmp/ubuntu
+df -h | grep ${TARGET_DEV}
+echo
 echo "Done."

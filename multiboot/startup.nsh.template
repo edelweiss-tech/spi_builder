@@ -4,17 +4,17 @@ cls
 if exist .\grubaa64.efi then
 goto FOUNDIMAGE
 endif
-if exist fs0:\EFI\multi\grubaa64.efi then
+if exist fs0:\EFI\debian\grubaa64.efi then
 fs0:
 echo Found GRUB EFI module on fs0:
 goto FOUNDIMAGE
 endif
-if exist fs1:\EFI\multi\grubaa64.efi then
+if exist fs1:\EFI\debian\grubaa64.efi then
 fs1:
 echo Found GRUB EFI module on fs1:
 goto FOUNDIMAGE
 endif
-if exist fs2:\EFI\multi\grubaa64.efi then
+if exist fs2:\EFI\debian\grubaa64.efi then
 fs2:
 echo Found GRUB EFI module on fs2:
 goto FOUNDIMAGE
@@ -24,8 +24,8 @@ echo ""
 goto END
 :FOUNDIMAGE
 echo "Running GRUB EFI module"
-cd .\EFI\multi
+cd .\EFI\debian
 .\grubaa64.efi
 :END 
 echo "Running the default kernel"
-bfkm.Image root=UUID=REDOS_STUB rw rootwait console=ttyS0,115200n8 earlyprintk=uart8250-32bit,0x20230000 earlycon=efifb,ram video=HDMI-A-1:D fbcon=map:10 baikal-hdmi.max_clock = 148500
+vmlinuz-5.4.91-bm-g6987adcc4bfc-dirty dtb=bm-mitx.dtb initrd=initrd.img-5.4.91-bm-g6987adcc4bfc-dirty root=UUID=EDELW_STUB rw rootwait console=ttyS0,115200n8 earlyprintk=uart8250-32bit,0x20230000 earlycon=efifb,ram video=HDMI-A-1:D fbcon=map:10 baikal-hdmi.max_clock=148500

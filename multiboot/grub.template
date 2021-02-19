@@ -106,6 +106,7 @@ fi
 menuentry 'RED OS release MUROM (7.2)' --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-simple-REDOS_STUB' {
 	savedefault
 	load_video
+	set gfxpayload=keep
 	insmod gzio
 	insmod part_gpt
 	insmod ext2
@@ -115,11 +116,11 @@ menuentry 'RED OS release MUROM (7.2)' --class gnu-linux --class gnu --class os 
 	else
 	  search --no-floppy --fs-uuid --set=root REDOS_STUB
 	fi
-	echo	'Загружается Linux bfkm.Image …'
-	linux /boot/bfkm.Image root=UUID=REDOS_STUB  rw rootwait console=ttyS0,115200n8 earlyprintk=uart8250-32bit,0x20230000 earlycon=efifb,ram video=HDMI-A-1:D fbcon=map:10 baikal-hdmi.max_clock = 148500
+	echo	'Загружается Linux vmlinuz  …'
+	linux /boot/vmlinuz root=UUID=REDOS_STUB  rw rootwait rhgb console=ttyS0,115200n8 earlyprintk=uart8250-32bit,0x20230000 earlycon=efifb,ram video=HDMI-A-1:D fbcon=map:10 baikal-hdmi.max_clock = 148500
 
 	echo	'Загружается начальный виртуальный диск …'
-	initrd /boot/initramfs-4.9.216b-m-RS.img
+	initrd /boot/initrd.img
 	devicetree /boot/bm-mitx.dtb
 }
 

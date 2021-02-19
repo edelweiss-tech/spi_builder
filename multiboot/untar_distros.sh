@@ -17,16 +17,6 @@ TARGET_DEV="$1"
 
 # End of configurable parameters
 
-umount ${TARGET_DEV}{1,2,3,5,6,7,8}
-mkdir -p /tmp/{efi,redos,edelw,alt,astra,wayland,ubuntu}
-mount ${TARGET_DEV}1 /tmp/efi
-mount ${TARGET_DEV}2 /tmp/redos
-mount ${TARGET_DEV}3 /tmp/edelw
-mount ${TARGET_DEV}5 /tmp/alt
-mount ${TARGET_DEV}6 /tmp/astra
-mount ${TARGET_DEV}7 /tmp/wayland
-mount ${TARGET_DEV}8 /tmp/ubuntu
-
 echo "Untar EFI ..."
 tar cf - -C ./d_1 . | tar xpf - -C /tmp/efi
 sync
@@ -83,6 +73,6 @@ s/ALT_STUB/'${alt_uuid}'/; s/ASTRA_STUB/'${astra_uuid}'/;
 s/WAYLAND_STUB/'${wayland_uuid}'/; 
 s/UBUNTU_STUB/'${ubuntu_uuid}'/;' grub.template > /tmp/redos/boot/grub2/grub.cfg
 
-sed -e 's/REDOS_STUB/'${redos_uuid}'/;' efi_grub.template > /tmp/efi/EFI/multi/grub.cfg
-sed -e 's/REDOS_STUB/'${redos_uuid}'/;' startup.nsh.template > /tmp/efi/startup.nsh
+sed -e 's/EDELW_STUB/'${edelw_uuid}'/;' efi_grub.template > /tmp/efi/EFI/debian/grub.cfg
+sed -e 's/EDELW_STUB/'${edelw_uuid}'/;' startup.nsh.template > /tmp/efi/startup.nsh
 
