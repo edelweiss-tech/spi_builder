@@ -1,0 +1,24 @@
+Local copy is stored at ~/redos/. Here are the links from the distribution
+maker.
+
+========================
+Release 20200914:
+
+To install, copy the uncompressed image with dd to the disk and boot from it. 
+
+Пароли: redsoft или 111111.
+
+Если root пароль потерялся/не подходит:
+1. Загрузиться в single mode, добавив init=/bin/bash rw в cmdline в startup.nsh
+на партичке /dev/sda1 и загрузиться.
+2. sed -i "s/SELINUX=enforcing/SELINUX=permissive/" /etc/selinux/config
+3. Сменить пароль (passwd root) и перегрузиться.
+4. Вернуть режим enforcing в SELINUX.
+
+Ссылка на дистрибутив РЕД ОС для процессоров Байкал:
+[1]https://share.red-soft.ru/index.php/s/QeF2LFteLNnDsaG
+
+Release 20210218:
+
+Тестовый дистрибутив РЕД ОС 7.3 доступен для скачивания по ссылке:
++https://redos.red-soft.ru/redos/7.3/redos-MUROM-7.3-20210201-Everything-x86_64-DVD1.iso.
