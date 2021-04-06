@@ -79,7 +79,7 @@ sync
 yes | mkfs.ext4 ${TARGET_DEV}8
 sync
 
-mkdir -p /tmp/{efi,redos,edelw,alt,astra,wayland,ubuntu}
+mkdir -p /tmp/{efi,redos,edelsw,alt,astra,wayland,ubuntu}
 # skip dev 4 as it is a swap partition
 mount ${TARGET_DEV}1 /tmp/efi
 mount ${TARGET_DEV}2 /tmp/redos

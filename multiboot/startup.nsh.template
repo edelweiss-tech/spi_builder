@@ -4,25 +4,20 @@ cls
 if exist .\grubaa64.efi then
 goto FOUNDIMAGE
 endif
-if exist fs0:\EFI\debian\grubaa64.efi then
-fs0:
-echo Found GRUB EFI module on fs0:
-goto FOUNDIMAGE
-endif
-if exist fs1:\EFI\debian\grubaa64.efi then
-fs1:
-echo Found GRUB EFI module on fs1:
-goto FOUNDIMAGE
-endif
-if exist fs2:\EFI\debian\grubaa64.efi then
-fs2:
-echo Found GRUB EFI module on fs2:
-goto FOUNDIMAGE
-endif
+for %a run (0 11)
+  if exist fs%a:\EFI\debian\grubaa64.efi then
+  fs%a:
+  echo Found GRUB EFI module on fs%a:
+  goto FOUNDIMAGE
+  endif
+endfor
+
+cls
 echo "Unable to find GRUB EFI module".
 echo ""
 goto END
 :FOUNDIMAGE
+cls
 echo "Running GRUB EFI module"
 cd .\EFI\debian
 .\grubaa64.efi

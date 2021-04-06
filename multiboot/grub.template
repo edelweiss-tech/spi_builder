@@ -121,10 +121,10 @@ menuentry 'RED OS release MUROM (7.2)' --class gnu-linux --class gnu --class os 
 
 	echo	'Загружается начальный виртуальный диск …'
 	initrd /boot/initrd.img
-	devicetree /boot/bm-mitx.dtb
+#	devicetree /boot/bm-mitx.dtb
 }
 
-menuentry 'Debian Edelweiss' --class debian --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-simple-EDELW_STUB' {
+menuentry 'Edelweiss Testing' --class debian --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-simple-EDELW_STUB' {
 	load_video
 	insmod gzio
 	if [ x$grub_platform = xxen ]; then insmod xzio; insmod lzopio; fi
@@ -140,9 +140,10 @@ menuentry 'Debian Edelweiss' --class debian --class gnu-linux --class gnu --clas
 	linux	/boot/vmlinuz root=UUID=EDELW_STUB ro  console=ttyS0,115200 console=tty1 fbcon=map:0 plymouth.enable=0
 	echo	'Loading initial ramdisk ...'
 	initrd	/boot/initrd.img
-	devicetree /boot/bm-mitx.dtb
+#	devicetree /boot/bm-mitx.dtb
 }
-menuentry 'ALT Workstation 9.1' --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-simple-ALT_STUB' {
+
+menuentry 'Simply Linux 9.0.91 for monoblock' --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-simple-ALT_STUB' {
 	savedefault
 	load_video
 	insmod gzio
@@ -150,18 +151,39 @@ menuentry 'ALT Workstation 9.1' --class gnu-linux --class gnu --class os --unres
 	insmod ext2
 	set root='hd0,gpt5'
 	if [ x$feature_platform_search_hint = xy ]; then
-	  search --no-floppy --fs-uuid --set=root --hint-bios=hd0,gpt5 --hint-efi=hd0,gpt5 --hint-baremetal=ahci0,gpt5  ALT_STUB
+		search --no-floppy --fs-uuid --set=root --hint-bios=hd0,gpt5 --hint-efi=hd0,gpt5 --hint-baremetal=ahci0,gpt5  ALT_STUB
 	else
-	  search --no-floppy --fs-uuid --set=root ALT_STUB
+		search --no-floppy --fs-uuid --set=root ALT_STUB
 	fi
-	echo	'Загружается Linux vmlinuz-4.9.229-bmitx-def-alt1 …'
-	linux /boot/vmlinuz-4.9.229-bmitx-def-alt1 root=UUID=ALT_STUB ro resume=/dev/disk/by-uuid/ab38ef79-9e30-4078-96f8-373bd16fcabf panic=30 splash console=ttyS0,115200 console=tty1 fbcon=map:0
+	echo	'Загружается Linux vmlinuz-mitx.bin ...'
+	linux /boot/vmlinuz-mitx.bin root=UUID=ALT_STUB ro resume=/dev/disk/by-uuid/14b010f9-1f2b-4e78-aa14-d14c6af8571f panic=30 splash console=ttyS0,115200 console=tty1 fbcon=map:0
 	echo	'Загружается начальный виртуальный диск …'
 	initrd /boot/initrd.img
-	devicetree /boot/bm-mitx.dtb
+	#devicetree /boot/bm-mitx.dtb
 }
 
-menuentry 'Astra Linux (Novorossiysk 4.2.1)' --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-simple-ASTRA_STUB' {
+submenu 'Advanced options for Simply Linux 9.0.91' $menuentry_id_option 'gnulinux-advanced-ALT_STUB' {
+	menuentry 'Simply Linux 9.0.91 for Rev. C' --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-original-advanced-ALT_STUB' {
+		savedefault
+		load_video
+		insmod gzio
+		insmod part_msdos
+		insmod ext2
+		set root='hd0,gpt5'
+		if [ x$feature_platform_search_hint = xy ]; then
+		  search --no-floppy --fs-uuid --set=root --hint-bios=hd0,gpt5 --hint-efi=hd0,gpt5 --hint-baremetal=ahci0,gpt5  ALT_STUB
+		else
+		  search --no-floppy --fs-uuid --set=root ALT_STUB
+		fi
+		echo	'Загружается Linux vmlinuz …'
+		linux /boot/vmlinuz root=UUID=ALT_STUB ro resume=/dev/disk/by-uuid/14b010f9-1f2b-4e78-aa14-d14c6af8571f panic=30 splash console=ttyS0,115200 console=tty1 fbcon=map:0
+		echo	'Загружается начальный виртуальный диск ...'
+		initrd /boot/initrd.img
+		#devicetree /boot/bm-mitx.dtb
+	}
+}
+
+menuentry 'Astra Linux 4.11.4 (Novorossiysk)' --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-simple-ASTRA_STUB' {
 	savedefault
 	load_video
 	insmod gzio
@@ -177,44 +199,7 @@ menuentry 'Astra Linux (Novorossiysk 4.2.1)' --class gnu-linux --class gnu --cla
 	linux /boot/vmlinuz root=UUID=ASTRA_STUB  rw rootwait console=tty1 console=ttyS0,115200n8 earlyprintk=uart8250-32bit,0x20230000 earlycon=efifb,ram video=HDMI-A-1:D fbcon=map:10 baikal-hdmi.max_clock = 148500 verbose ignore_loglevel systemd.legacy_systemd_cgroup_controller=yes efi=noruntime
 	echo	'Загружается начальный виртуальный диск …'
 	initrd /boot/initrd.img
-	devicetree /boot/bm-mitx.dtb
-}
-
-menuentry 'Debian Wayland' --class debian --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-simple-WAYLAND_STUB' {
-	load_video
-	insmod gzio
-	if [ x$grub_platform = xxen ]; then insmod xzio; insmod lzopio; fi
-	insmod part_gpt
-	insmod ext2
-	set root='hd0,gpt7'
-	if [ x$feature_platform_search_hint = xy ]; then
-	  search --no-floppy --fs-uuid --set=root --hint-bios=hd0,gpt7 --hint-efi=hd0,gpt7 --hint-baremetal=ahci0,gpt7  WAYLAND_STUB
-	else
-	  search --no-floppy --fs-uuid --set=root WAYLAND_STUB
-	fi
-	echo	'Loading Linux 4.9.229-baikal_m1000 ...'
-	linux	/boot/vmlinuz-4.9.229-baikal_m1000 root=UUID=WAYLAND_STUB ro  verbose
-	echo	'Loading initial ramdisk ...'
-	initrd	/boot/initrd.img-4.9.229-baikal_m1000
-	devicetree /boot/bm-mitx.dtb
-}
-menuentry 'Ubuntu 20.04.1' --class ubuntu --class gnu-linux --class gnu --class os $menuentry_id_option 'gnulinux-simple-UBUNTU_STUB' {
-	#recordfail
-	load_video
-	#gfxmode $linux_gfx_mode
-	insmod gzio
-	if [ x$grub_platform = xxen ]; then insmod xzio; insmod lzopio; fi
-	insmod part_gpt
-	insmod ext2
-	set root='hd0,gpt8'
-	if [ x$feature_platform_search_hint = xy ]; then
-	  search --no-floppy --fs-uuid --set=root --hint-bios=hd0,gpt8 --hint-efi=hd0,gpt8 --hint-baremetal=ahci0,gpt8  UBUNTU_STUB
-	else
-	  search --no-floppy --fs-uuid --set=root UBUNTU_STUB
-	fi
-	linux	/boot/vmlinuz root=UUID=UBUNTU_STUB ro  console=tty1
-	initrd	/boot/initrd.img
-	devicetree /boot/bm-mitx.dtb
+	# devicetree /boot/bm-mitx.dtb
 }
 
 ### END /etc/grub.d/10_linux ###
