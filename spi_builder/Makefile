@@ -88,4 +88,4 @@ clean:
 	rm -rf $(UEFI_DIR)/Build
 	rm -rf $(DTB_DIR)
 	rm -rf $(IMG_DIR)/$(BOARD).*
-	$(MAKE) -C $(ARMTF_DIR) PLAT=bm1000 BE_TARGET=mitx realclean
+	$(MAKE) -C $(ARMTF_DIR) PLAT=bm1000 BE_TARGET=$(BE_TARGET) realclean
