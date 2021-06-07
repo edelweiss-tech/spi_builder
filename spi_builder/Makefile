@@ -1,9 +1,12 @@
+PWD := $(shell pwd)
 SRC ?= $(HOME)/gitlab/baikal-m
 #CROSS ?= aarch64-unknown-linux-gnu-
 #CROSS ?= aarch64-linux-gnu-
 CROSS := $(HOME)/toolchains/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-
-SDK_VER = 4.4
-BOARD ?= mitx
+# SDK_VER = 4.4
+SDK_VER ?= 5.1
+SDK_REV = 1
+BOARD ?= mitx-d
 PLAT = bm1000
 
 ifeq ($(BOARD),mitx)
@@ -24,7 +27,11 @@ UEFI_BUILD_TYPE ?= RELEASE
 ARMTF_DEBUG ?= 0
 
 SCP_BLOB = ./prebuilts/$(SDK_VER)/$(BE_TARGET).scp.flash.bin
-UEFI_DIR ?= $(SRC)/uefi
+ifeq ($(SDK_VER),4.4)
+	UEFI_DIR ?= $(SRC)/uefi
+else
+	UEFI_DIR = $(PWD)/uefi
+endif
 ARMTF_DIR ?= $(SRC)/arm-tf
 KDIR ?= $(SRC)/kernel
 
@@ -38,9 +45,13 @@ TARGET_CFG = $(BE_TARGET)_defconfig
 TARGET_DTB = baikal/bm-$(BOARD).dtb
 KERNEL_FLAGS = O=$(DTB_DIR) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS) -C $(KDIR)
 
-UEFI_FLAGS = $(UEFI_BUILD_TYPE)
+ifeq ($(SDK_VER),4.4)
+else
+	UEFI_FLAGS = -DFIRMWARE_VERSION_STRING=$(SDK_VER) -DFIRMWARE_REVISION=$(SDK_REV)
+	UEFI_FLAGS += -DFIRMWARE_VENDOR=\"Edelweiss\"
+endif
 ifeq ($(BE_TARGET),mitx)
-	UEFI_FLAGS += -D BE_MITX=TRUE -D BOARD_VER=$(BOARD_VER)
+	UEFI_FLAGS += -DBE_MITX=TRUE -DBOARD_VER=$(BOARD_VER)
 endif
 
 ifeq ($(ARMTF_DEBUG),0)
@@ -53,18 +64,43 @@ ARMTF_BUILD_DIR = $(ARMTF_DIR)/build/$(PLAT)/$(ARMTF_BUILD_TYPE)
 BL1_BIN = $(ARMTF_BUILD_DIR)/bl1.bin
 FIP_BIN = $(ARMTF_BUILD_DIR)/fip.bin
 
-all: bootrom
+all: setup bootrom
+
+setup:
+ifeq ($(SDK_VER),4.4)
+else
+	if [ ! -d uefi ]; then \
+	mkdir uefi; \
+	cd $(UEFI_DIR); \
+	git clone http://github.com/tianocore/edk2.git; \
+	git clone https://github.com/tianocore/edk2-non-osi.git; \
+	git clone git@gitlab.tpl:baikal-m/edk2-platform-baikal.git; \
+	cd $(UEFI_DIR)/edk2; \
+	git checkout 06dc822d045; \
+	git submodule update --init; \
+	cd $(PWD); \
+	fi
+endif
 
 # Note: BaseTools cannot be built in parallel.
 basetools:
+ifeq ($(SDK_VER),4.4)
 	$(MAKE) -C $(UEFI_DIR)/BaseTools
+else
+	UEFI_DIR=${UEFI_DIR} ./buildbasetools.sh
+endif
 
 uefi $(IMG_DIR)/$(BOARD).efi.fd: basetools
 	mkdir -p img
 	rm -f $(IMG_DIR)/$(BOARD).efi.fd
 	rm -rf $(UEFI_DIR)/Build
-	UEFI_DIR=$(UEFI_DIR) CROSS=$(CROSS) UEFI_FLAGS="$(UEFI_FLAGS)" ./builduefi.sh
+ifeq ($(SDK_VER),4.4)
+	UEFI_DIR=$(UEFI_DIR) CROSS=$(CROSS) BUILD_TYPE=$(UEFI_BUILD_TYPE) UEFI_FLAGS="$(UEFI_FLAGS)" ./builduefi_oldsdk.sh
 	cp $(UEFI_DIR)/Build/ArmBaikalBfkm-AARCH64/$(UEFI_BUILD_TYPE)_GCC6/FV/BFKM_EFI.fd $(IMG_DIR)/$(BOARD).efi.fd
+else
+	UEFI_DIR=$(UEFI_DIR) CROSS=$(CROSS) BUILD_TYPE=$(UEFI_BUILD_TYPE) UEFI_FLAGS="$(UEFI_FLAGS)" ./builduefi.sh
+	cp $(UEFI_DIR)/Build/Baikal/$(UEFI_BUILD_TYPE)_GCC5/FV/BAIKAL_EFI.fd $(IMG_DIR)/$(BOARD).efi.fd
+endif
 
 arm-tf $(IMG_DIR)/$(BOARD).fip.bin $(IMG_DIR)/$(BOARD).bl1.bin: $(IMG_DIR)/$(BOARD).efi.fd
 	rm -rf $(ARMTF_DIR)/build
@@ -88,4 +124,10 @@ clean:
 	rm -rf $(UEFI_DIR)/Build
 	rm -rf $(DTB_DIR)
 	rm -rf $(IMG_DIR)/$(BOARD).*
+ifeq ($(SDK_VER),4.4)
 	$(MAKE) -C $(ARMTF_DIR) PLAT=bm1000 BE_TARGET=$(BE_TARGET) realclean
+else
+	$(MAKE) -C $(ARMTF_DIR) PLAT=baikal realclean
+endif
+
+.PHONY: uefi arm-tf dtb bootrom

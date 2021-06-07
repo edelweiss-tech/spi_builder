@@ -30,14 +30,11 @@ sudo apt install libftdi1
 
 $ minicom -C ses.log S2
 
-You need to set ATX_PSON and EN_1V8 pins. There id's can be different from 19
-and 23, so use the 'list' command first.
+You need to set ATX_PSON and EN_1V8 pins. Either do it directly with 'pins list'
+and 'pins set', or just run:
 
->:pins list
->:pins set 19
-Set pin 19 (ATX_PSON)
->:pins set 23
-Set pin 23 (EN_1V8)
+>:pins bootseq
+>:pins cpu_off
 
 Flashrom shall be at least version 1.2:
 $ cd img
