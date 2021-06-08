@@ -8,6 +8,10 @@ Set the source dir, cross compiler, and DUAL_FLASH in Makefile.
 
 $ make BOARD=mitx-d
 
+To build for older SDK:
+
+$ make SDK_VER=4.4 BOARD=mitx-d
+
 To build a debug module separate from the SPI image:
 
 Comment out the required module in ArmBaikalPkg/ArmBaikalBfkm.fdf.inc. For example:
