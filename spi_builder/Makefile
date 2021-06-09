@@ -1,11 +1,16 @@
-SRC ?= $(HOME)/gitlab/baikal-m
-UEFI_DIR = $(CURDIR)/uefi_build
-ARMTF_DIR ?= $(SRC)/arm-tf
-KDIR ?= $(SRC)/kernel
-
-#CROSS ?= aarch64-unknown-linux-gnu-
-#CROSS ?= aarch64-linux-gnu-
+ARMTF_DIR ?= $(HOME)/gitlab/baikal-m/arm-tf
+# The kernel sources are used to build DTB
+KDIR ?= $(HOME)/gitlab/baikal-m/kernel
+# You can use a generic ARM64 compiler, or the one from Baikal SDK
 CROSS := $(HOME)/toolchains/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-
+# For older UEFI from SDK 4.4 use our sources
+OLD_EDK2 := git@gitlab.tpl:baikal-m/edk2.git -b 4.4-tp
+# Newer UEFI in SDK 5.1 is coupled with the upstream code. Only
+# platform-specific part comes from our sources.
+NEW_EDK2 := http://github.com/tianocore/edk2.git
+NEW_EDK2_NON_OSI := https://github.com/tianocore/edk2-non-osi.git
+NEW_EDK2_PLATFORM_SPECIFIC := git@gitlab.tpl:baikal-m/edk2-platform-baikal.git
+
 # SDK_VER = 4.4
 SDK_VER ?= 5.1
 SDK_REV = 1
@@ -36,6 +41,7 @@ NCPU := $(shell nproc)
 
 DTB_DIR := $(CURDIR)/build
 IMG_DIR := $(CURDIR)/img
+UEFI_DIR := $(CURDIR)/uefi_workspace
 
 TARGET_CFG = $(BE_TARGET)_defconfig
 TARGET_DTB = baikal/bm-$(BOARD).dtb
@@ -67,16 +73,16 @@ ifeq ($(SDK_VER),4.4)
 	if [ ! -d $(UEFI_DIR) ]; then \
 	mkdir $(UEFI_DIR); \
 	cd $(UEFI_DIR); \
-	git clone git@gitlab.tpl:baikal-m/edk2.git -b 4.4-tp; \
+	git clone $(OLD_EDK2); \
 	cd $(CURDIR); \
 	fi
 else
 	if [ ! -d $(UEFI_DIR) ]; then \
 	mkdir $(UEFI_DIR); \
 	cd $(UEFI_DIR); \
-	git clone http://github.com/tianocore/edk2.git; \
-	git clone https://github.com/tianocore/edk2-non-osi.git; \
-	git clone git@gitlab.tpl:baikal-m/edk2-platform-baikal.git; \
+	git clone $(NEW_EDK2); \
+	git clone $(NEW_EDK2_NON_OSI); \
+	git clone $(NEW_EDK2_PLATFORM_SPECIFIC); \
 	cd $(UEFI_DIR)/edk2; \
 	git checkout 06dc822d045; \
 	git submodule update --init; \
