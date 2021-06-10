@@ -1,15 +1,23 @@
-ARMTF_DIR ?= $(HOME)/gitlab/baikal-m/arm-tf
-# The kernel sources are used to build DTB
+# The kernel sources are used to build DTB. The sources are at:
+# git@github.com:edelweiss-tech/kernel.git
 KDIR ?= $(HOME)/gitlab/baikal-m/kernel
+
 # You can use a generic ARM64 compiler, or the one from Baikal SDK
 CROSS := $(HOME)/toolchains/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-
+
+# ARM_TF_GIT := git@gitlab.tpl:baikal-m/arm-tf.git
+ARM_TF_GIT := git@github.com:edelweiss-tech/arm-tf.git
+
 # For older UEFI from SDK 4.4 use our sources
-OLD_EDK2 := git@gitlab.tpl:baikal-m/edk2.git -b 4.4-tp
+# OLD_EDK2_GIT := git@gitlab.tpl:baikal-m/edk2.git -b 4.4-tp
+OLD_EDK2_GIT := git@github.com:edelweiss-tech/edk2.git -b 4.4-tp
+
 # Newer UEFI in SDK 5.1 is coupled with the upstream code. Only
 # platform-specific part comes from our sources.
-NEW_EDK2 := http://github.com/tianocore/edk2.git
-NEW_EDK2_NON_OSI := https://github.com/tianocore/edk2-non-osi.git
-NEW_EDK2_PLATFORM_SPECIFIC := git@gitlab.tpl:baikal-m/edk2-platform-baikal.git
+NEW_EDK2_GIT := http://github.com/tianocore/edk2.git
+NEW_EDK2_NON_OSI_GIT := https://github.com/tianocore/edk2-non-osi.git
+#NEW_EDK2_PLATFORM_SPECIFIC_GIT := git@gitlab.tpl:baikal-m/edk2-platform-baikal.git
+NEW_EDK2_PLATFORM_SPECIFIC_GIT := git@github.com:edelweiss-tech/edk2-platform-baikal.git
 
 # SDK_VER = 4.4
 SDK_VER ?= 5.1
@@ -39,9 +47,10 @@ SCP_BLOB = ./prebuilts/$(SDK_VER)/$(BE_TARGET).scp.flash.bin
 ARCH = arm64
 NCPU := $(shell nproc)
 
-DTB_DIR := $(CURDIR)/build
 IMG_DIR := $(CURDIR)/img
-UEFI_DIR := $(CURDIR)/uefi_workspace
+BIOS_WORKSPACE := $(CURDIR)/workspace
+ARMTF_DIR := $(BIOS_WORKSPACE)/arm-tf
+DTB_DIR := $(BIOS_WORKSPACE)/build
 
 TARGET_CFG = $(BE_TARGET)_defconfig
 TARGET_DTB = baikal/bm-$(BOARD).dtb
@@ -70,20 +79,22 @@ all: setup bootrom
 
 setup:
 ifeq ($(SDK_VER),4.4)
-	if [ ! -d $(UEFI_DIR) ]; then \
-	mkdir $(UEFI_DIR); \
-	cd $(UEFI_DIR); \
-	git clone $(OLD_EDK2); \
+	if [ ! -d $(BIOS_WORKSPACE) ]; then \
+	mkdir $(BIOS_WORKSPACE); \
+	cd $(BIOS_WORKSPACE); \
+	git clone $(ARM_TF_GIT) -b v2.3-tp; \
+	git clone $(OLD_EDK2_GIT); \
 	cd $(CURDIR); \
 	fi
 else
-	if [ ! -d $(UEFI_DIR) ]; then \
-	mkdir $(UEFI_DIR); \
-	cd $(UEFI_DIR); \
-	git clone $(NEW_EDK2); \
-	git clone $(NEW_EDK2_NON_OSI); \
-	git clone $(NEW_EDK2_PLATFORM_SPECIFIC); \
-	cd $(UEFI_DIR)/edk2; \
+	if [ ! -d $(BIOS_WORKSPACE) ]; then \
+	mkdir $(BIOS_WORKSPACE); \
+	cd $(BIOS_WORKSPACE); \
+	git clone $(ARM_TF_GIT) -b v2.4-tp; \
+	git clone $(NEW_EDK2_GIT); \
+	git clone $(NEW_EDK2_NON_OSI_GIT); \
+	git clone $(NEW_EDK2_PLATFORM_SPECIFIC_GIT); \
+	cd $(BIOS_WORKSPACE)/edk2; \
 	git checkout 06dc822d045; \
 	git submodule update --init; \
 	cd $(CURDIR); \
@@ -92,20 +103,20 @@ endif
 
 # Note: BaseTools cannot be built in parallel.
 basetools:
-	SDK_VER=$(SDK_VER) UEFI_DIR=$(UEFI_DIR) ./buildbasetools.sh
+	SDK_VER=$(SDK_VER) BIOS_WORKSPACE=$(BIOS_WORKSPACE) ./buildbasetools.sh
 
-uefi $(IMG_DIR)/$(BOARD).efi.fd: basetools
+$(IMG_DIR)/$(BOARD).efi.fd: basetools
 	mkdir -p img
 	rm -f $(IMG_DIR)/$(BOARD).efi.fd
-	rm -rf $(UEFI_DIR)/Build
-	SDK_VER=$(SDK_VER) UEFI_DIR=$(UEFI_DIR) CROSS=$(CROSS) BUILD_TYPE=$(UEFI_BUILD_TYPE) UEFI_FLAGS="$(UEFI_FLAGS)" ./builduefi.sh
+	rm -rf $(BIOS_WORKSPACE)/Build
+	SDK_VER=$(SDK_VER) BIOS_WORKSPACE=$(BIOS_WORKSPACE) CROSS=$(CROSS) BUILD_TYPE=$(UEFI_BUILD_TYPE) UEFI_FLAGS="$(UEFI_FLAGS)" ./builduefi.sh
 ifeq ($(SDK_VER),4.4)
-	cp $(UEFI_DIR)/edk2/Build/ArmBaikalBfkm-AARCH64/$(UEFI_BUILD_TYPE)_GCC6/FV/BFKM_EFI.fd $(IMG_DIR)/$(BOARD).efi.fd
+	cp $(BIOS_WORKSPACE)/edk2/Build/ArmBaikalBfkm-AARCH64/$(UEFI_BUILD_TYPE)_GCC6/FV/BFKM_EFI.fd $(IMG_DIR)/$(BOARD).efi.fd
 else
-	cp $(UEFI_DIR)/Build/Baikal/$(UEFI_BUILD_TYPE)_GCC5/FV/BAIKAL_EFI.fd $(IMG_DIR)/$(BOARD).efi.fd
+	cp $(BIOS_WORKSPACE)/Build/Baikal/$(UEFI_BUILD_TYPE)_GCC5/FV/BAIKAL_EFI.fd $(IMG_DIR)/$(BOARD).efi.fd
 endif
 
-arm-tf $(IMG_DIR)/$(BOARD).fip.bin $(IMG_DIR)/$(BOARD).bl1.bin: $(IMG_DIR)/$(BOARD).efi.fd
+$(IMG_DIR)/$(BOARD).fip.bin: $(IMG_DIR)/$(BOARD).efi.fd
 	rm -rf $(ARMTF_DIR)/build
 	mkdir -p $(ARMTF_DIR)/build
 	echo $(BOARD) > $(ARMTF_DIR)/build/subtarget
@@ -114,20 +125,23 @@ arm-tf $(IMG_DIR)/$(BOARD).fip.bin $(IMG_DIR)/$(BOARD).bl1.bin: $(IMG_DIR)/$(BOA
 	cp $(FIP_BIN) $(IMG_DIR)/$(BOARD).fip.bin
 	cp $(BL1_BIN) $(IMG_DIR)/$(BOARD).bl1.bin
 
-bootrom: $(IMG_DIR)/$(BOARD).fip.bin $(IMG_DIR)/$(BOARD).bl1.bin $(IMG_DIR)/$(BOARD).dtb
+bootrom: $(IMG_DIR)/$(BOARD).fip.bin $(IMG_DIR)/$(BOARD).dtb
 	IMG_DIR=$(IMG_DIR) BOARD=$(BOARD) SCP_BLOB=$(SCP_BLOB) DUAL_FLASH=$(DUAL_FLASH) ./genrom.sh
 
-dtb $(IMG_DIR)/$(BOARD).dtb: 
+$(IMG_DIR)/$(BOARD).dtb: 
 	mkdir -p $(DTB_DIR)
 	$(MAKE) -j$(NCPU) $(KERNEL_FLAGS) $(TARGET_CFG)
 	$(MAKE) -j$(NCPU) $(KERNEL_FLAGS) $(TARGET_DTB)
 	cp $(DTB_DIR)/arch/$(ARCH)/boot/dts/$(TARGET_DTB) $(IMG_DIR)/$(BOARD).dtb
 
 clean:
-	rm -rf $(UEFI_DIR)/Build
-	rm -rf $(UEFI_DIR)/edk2/Build
 	rm -rf $(DTB_DIR)
+	rm -rf $(BIOS_WORKSPACE)/Build
+	rm -rf $(BIOS_WORKSPACE)/edk2/Build
 	rm -rf $(IMG_DIR)/$(BOARD).*
 	$(MAKE) -C $(ARMTF_DIR) PLAT=bm1000 BE_TARGET=$(BE_TARGET) realclean
 
-.PHONY: uefi arm-tf dtb bootrom
+distclean: clean
+	rm -rf $(BIOS_WORKSPACE)
+
+.PHONY: bootrom

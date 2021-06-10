@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ${UEFI_DIR}
+cd ${BIOS_WORKSPACE}
 
 if [ "${SDK_VER}" = "4.4" ]; then
 	:
