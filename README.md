@@ -4,12 +4,17 @@ How to build SPI image
 
 To build mitx.full.padded:
 
-Set the source dir, cross compiler, and DUAL_FLASH in Makefile.
+Setup the kernel source and cross tools in the Makefile.
 
+Build the image for your target. For example:
+
+For TF307 boxes with HDMI:
 $ make BOARD=mitx-d
 
-To build for older SDK:
+Alternatively, for monoblocks with LVDS:
+$ make BOARD=mitx-d-lvds
 
+To build for older SDK:
 $ make SDK_VER=4.4 BOARD=mitx-d
 
 To build a debug module separate from the SPI image:

@@ -32,6 +32,10 @@ else ifeq ($(BOARD),mitx-d)
 	BE_TARGET = mitx
 	BOARD_VER = 2
 #	DUAL_FLASH ?= yes
+else ifeq ($(BOARD),mitx-d-lvds)
+	BE_TARGET = mitx
+	BOARD_VER = 2
+#	DUAL_FLASH ?= yes
 else ifeq ($(BOARD),e107)
 	BE_TARGET = mitx
 	BOARD_VER = 1
@@ -105,7 +109,7 @@ endif
 basetools:
 	SDK_VER=$(SDK_VER) BIOS_WORKSPACE=$(BIOS_WORKSPACE) ./buildbasetools.sh
 
-$(IMG_DIR)/$(BOARD).efi.fd: basetools
+uefi $(IMG_DIR)/$(BOARD).efi.fd: basetools
 	mkdir -p img
 	rm -f $(IMG_DIR)/$(BOARD).efi.fd
 	rm -rf $(BIOS_WORKSPACE)/Build
@@ -128,7 +132,7 @@ $(IMG_DIR)/$(BOARD).fip.bin: $(IMG_DIR)/$(BOARD).efi.fd
 bootrom: $(IMG_DIR)/$(BOARD).fip.bin $(IMG_DIR)/$(BOARD).dtb
 	IMG_DIR=$(IMG_DIR) BOARD=$(BOARD) SCP_BLOB=$(SCP_BLOB) DUAL_FLASH=$(DUAL_FLASH) ./genrom.sh
 
-$(IMG_DIR)/$(BOARD).dtb: 
+dtb $(IMG_DIR)/$(BOARD).dtb: 
 	mkdir -p $(DTB_DIR)
 	$(MAKE) -j$(NCPU) $(KERNEL_FLAGS) $(TARGET_CFG)
 	$(MAKE) -j$(NCPU) $(KERNEL_FLAGS) $(TARGET_DTB)
@@ -144,4 +148,4 @@ clean:
 distclean: clean
 	rm -rf $(BIOS_WORKSPACE)
 
-.PHONY: bootrom
+.PHONY: dtb uefi bootrom
