@@ -18,6 +18,14 @@ level since the board can be permanently damaged!**
 
 1. flashrom, version 1.2 or newer. Previous versions are known to **NOT** work
 2. picocom, version 2.2 (most likely older versions work too)
+3. sudo and sudo access
+
+For the automated flashing the following tools are also necessary:
+
+1. python3, version 3.6 or newer, previous versions are known to NOT work
+2. python3-serial, version 3.4 is known to work
+3. `lsusb` from usbutils, version 012 is known to work (most likely older versions work too)
+4. `udevadm` from udev, version 246 is known to work (most likely older versions work too)
 
 
 ## Connecting devices
@@ -59,7 +67,7 @@ Note: extra USB-UART adapter is required
 Yeah, this is messy.
 
 
-## Flashing
+## Manual flashing
 
 Initial state: 
 
@@ -152,3 +160,38 @@ Initial state:
    ```
    L: [SHELL] Pins are reset to board off state
    ```
+
+## Automated flashing
+
+Initial state is the same as for manual flashing:
+
+* The board is physically powered off (the power cord is disconnected)
+* Olimex ARM-USB-OCD-H JTAG is plugged into the host computer
+* FT232 USB UART is plugged into the host computer
+
+1. Power on the ATX power supply (attach the power cord), however **don't** power on the board yet.
+2. Wait 30 seconds (so BMC has enough time to initialize itself).
+
+3. Run
+
+```
+./tf307_fwupd.py mbm20.full.img
+```
+
+This will automatically detect the programmer and the BMC console, figure
+out the board revision, run BMC commands, actually flash the firmware,
+and power off the board.
+
+Note 1: by default the script skips `fat` and `vars` (EFI variables) sections.
+Use `--full` to flash the complete image.
+
+Note 2: if autodetection fails (or you don't trust it) programmer type,
+BMC console, and board revision can be explicitly specified, run 
+```
+./tf307_fwupd.py --help
+```
+for the details.
+
+Note 3: the script does not check if the given firmware file is suitable
+for the board. However flashing a wrong firmware is not fatal (for it's
+possible to flash the correct one).
