@@ -35,6 +35,8 @@ Insert the USB flash and boot. During boot, add the module via menu "Add driver 
 How to burn the image to SPI
 ============================
 
+See [flashing](tf307_flashing.md) for more detailed instructions.
+
 sudo apt install libftdi1
 
 $ minicom -C ses.log S2
