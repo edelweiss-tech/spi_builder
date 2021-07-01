@@ -1,0 +1,6 @@
+00000000:007fffff scp
+00080000:000bffff bl1
+000c0000:000cffff dtb
+000d0000:0018ffff vars
+00190000:007fffff fip
+00800000:01ffffff fat
