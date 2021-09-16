@@ -7,7 +7,6 @@ import re
 import os
 import time
 import serial
-import sys
 import subprocess
 
 MYDIR = os.path.dirname(os.path.abspath(__file__))
@@ -75,15 +74,15 @@ def guess_board_revision(bmc):
     bmc.read_until() # discard echo
     header = bmc.read_until().strip().decode('utf-8')
     if header.lower() != AVAILABLE_PINS:
-        logger.error('got: "%s", expected "%s"', header, AVAILABLE_PINS)
+        logging.error('got: "%s", expected "%s"', header, AVAILABLE_PINS)
         raise RuntimeError('Unexpected reply to "pins list"')
 
     out = bmc.read_until(BMC_PROMPT)
     pins_list = [line.decode('utf-8') for line in out.split(b'\r\n')]
     for line in pins_list:
         logging.debug('guess_board_revision: %s', line)
-    d_rx = re.compile('^11:\s*OUT\s+BM_SPI_SEL.*$')
-    ac_rx = re.compile('^07:\s*OUT\s+BM_SPI_SEL.*$')
+    d_rx = re.compile(r'^11:\s*OUT\s+BM_SPI_SEL.*$')
+    ac_rx = re.compile(r'^07:\s*OUT\s+BM_SPI_SEL.*$')
     is_d = any(d_rx.match(line) is not None for line in pins_list)
     is_ac = any(ac_rx.match(line) is not None for line in pins_list)
 
@@ -157,7 +156,7 @@ def finish(bmc):
     if reply != b'\x1b[32mL: [SHELL] Starting boot sequence\x1b[0m\r\n':
         logging.error('finish: unexpected reply "%s"', reply)
         raise RuntimeError('Got "%s" as reply to "pins bootseq"' % reply)
-    
+
     expected = b'\x1b[32mL: [SHELL] Boot sequence finished\x1b[0m\r\n'
     while reply != expected:
         logging.info('finish: reading more BMC output')
