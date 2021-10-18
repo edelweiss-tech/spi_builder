@@ -23,10 +23,12 @@ EN_1V8 = 'EN_1V8'
 PREFLASH_COMMANDS = (BM_SPI_SEL, ATX_PSON, EN_1V8)
 
 FLASH_CMD = 'sudo flashrom -p {} -c MT25QU256'
-OLIMEX = 'olimex'
+OLIMEX = 'ARM-USB-OCD-H'
+OLIMEX_TINY = 'ARM-USB-TINY-H'
 BAIKAL = 'baikal'
 PROGRAMMERS = {
     OLIMEX: 'ft2232_spi:type=arm-usb-ocd-h,port=A,divisor=8',
+    OLIMEX_TINY: 'ft2232_spi:type=arm-usb-tiny-h,port=A,divisor=8',
     BAIKAL: 'ch341a_spi',
 }
 
@@ -258,7 +260,7 @@ def detect_stlink():
 
 
 def guess_bmc_devnode(programmer):
-    if programmer == OLIMEX:
+    if programmer in (OLIMEX, OLIMEX_TINY):
         logging.debug('Trying to auto-detect FT232 USB UART')
         return detect_ft232r()
     elif programmer == BAIKAL:
@@ -295,18 +297,23 @@ def detect_baikail_programmer():
     return all(single_usb_device_present(usbid) for usbid in USB_IDS)
 
 
-def detect_olimex_programmer():
-    USB_IDS = [
-        '15ba:002b',
-    ]
-    return any(single_usb_device_present(usbid) for usbid in USB_IDS)
+def detect_olimex_programmers():
+    USB_IDS = {
+        '15ba:002b': OLIMEX,
+        '15ba:002a': OLIMEX_TINY,
+    }
+    for usbid, model in USB_IDS.items():
+        if single_usb_device_present(usbid):
+            return model
+    return None
 
 
 def guess_programmer():
-    logging.debug('Trying to detect OLIMEX programmer')
-    if detect_olimex_programmer():
-        logging.info('Found OLIMEX ARM-USB-OCD-H programmer')
-        return OLIMEX
+    logging.debug('Trying to detect OLIMEX programmers')
+    model = detect_olimex_programmers()
+    if model is not None:
+        logging.info('Found OLIMEX %s programmer', model)
+        return model
     logging.debug('Trying to detect BAIKAL programmer')
     if detect_baikail_programmer():
         logging.info('Found Baikal Electronics custom programmer')
@@ -342,7 +349,7 @@ def main():
     parser.add_argument('-t', '--tty', help='bmc console device',
                         default='auto')
     parser.add_argument('-p', '--programmer', help='programmer type',
-            choices=[BAIKAL, OLIMEX, 'auto'], default='auto')
+            choices=[BAIKAL, OLIMEX, OLIMEX_TINY, 'auto'], default='auto')
     parser.add_argument('-r', '--revision', help='board revision',
             choices=[BOARD_REVISION_AC, BOARD_REVISION_D, 'auto'],
             default='auto')
