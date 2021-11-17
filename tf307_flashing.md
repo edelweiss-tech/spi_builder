@@ -10,7 +10,8 @@ level since the board can be permanently damaged!**
 ## Required hardware
 
 1. [Olimex ARM-USB-OCD-H JTAG](https://www.olimex.com/Products/ARM/JTAG/ARM-USB-OCD-H)
-2. [FT232 USB UART board](https://www.chipdip.ru/product/ft232-usb-uart-board-type-a)
+2. [FT232RL USB UART board](https://a.aliexpress.com/_9uurjK).
+   Other boards with (TTL) signal level 1.8 Volts can be used too.
 3. Another computer (will be called `host` in this document)
 
 
