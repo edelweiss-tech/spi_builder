@@ -94,7 +94,7 @@ Initial state:
    On success BMC prints `Set pin[7] BM_SPI_SEL`
    2. `pins set 19`
    On success BMC powers on the board and prints `Set pin[19] ATX_PSON`
-   3. pins set 23
+   3. `pins set 23`
    On success BMC replies `Set pin[23] EN_1V8`
 5. For TF307-MB-S-D board run the following commands in BMC console:
    1. `pins set 11`
