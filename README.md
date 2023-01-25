@@ -1,5 +1,7 @@
 # How to flash TF307 board firmware
 
+![TF307-MB-S-D picture](tf307-mb-s-d-small.jpg)
+
 ## BIG RED WARNING
 
 1. **The level of UART and SPI signals on TF307 is 1.8 Volts.**
@@ -198,5 +200,6 @@ BMC console, and board revision can be explicitly specified, run
 for the details.
 
 Note 3: the script does not check if the given firmware file is suitable
-for the board. However flashing a wrong firmware is not fatal (for it's
-possible to flash the correct one).
+for the board. However flashing a wrong firmware is not fatal: this method
+does not touch the BMC (board management controller) firmware, so it's
+possible to flash the correct firware on error.
